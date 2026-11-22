@@ -1,0 +1,66 @@
+{
+  "run_id": "20261122-165101",
+  "task": "Fix the known gap: a low-priority task can push a high-priority one later. When tasks clash, the higher-priority task keeps its preferred time and the lower-priority one moves.",
+  "model": "claude-opus-5-5",
+  "plan": {
+    "summary": "Rewrite Scheduler._place_on_clock so higher-priority tasks keep their preferred times and lower-priority tasks move. Timed tasks are placed in order of priority rank, then preferred start minutes, then duration. Each one goes at max(day_start, preferred time) if that range is free. Otherwise it goes to the earliest free start at or after that point where it fits without overlapping anything already placed. Untimed tasks keep today's behavior: they are placed one after another, in their chosen order, starting from the later of day_start and the latest end among the timed tasks. The final plan is sorted stably by integer start minutes. I checked the existing test test_generate_daily_plan_records_conflicts and the main.py demo by hand, and both should produce the same output as today. No public API changes.",
+    "steps": [
+      "Read diagrams/uml.mmd, app.py, and conftest.py. Confirm that Scheduler's public surface is unchanged and that only private helpers are being added. If uml.mmd lists private methods, add the new helper there too.",
+      "In pawpal_system.py, add a private helper `_earliest_free_start(self, start: int, duration: int, busy: list[tuple[int, int]]) -> int` with a docstring. It returns the smallest t >= start such that [t, t+duration) overlaps no interval in busy, treating back-to-back as allowed. To do this, sort busy by start, then repeatedly bump t to the end of any overlapping interval until none overlaps.",
+      "Rewrite `_place_on_clock` to split `tasks` into timed and untimed lists while preserving the incoming order. Then sort the timed list stably with key `(t.priority_rank(), t.start_minutes, t.duration)`.",
+      "For each timed task, call the helper with `max(day_start_minutes, task.start_minutes)`, record the interval in busy, and append a ScheduledTask with `_to_hhmm` start and end.",
+      "For untimed tasks, set the cursor to the later of day_start and the latest end in busy (or day_start if nothing is busy). Place the untimed tasks sequentially in the order received. This matches the current end-of-day behavior, which is a separate known gap and stays out of scope.",
+      "Return the plan sorted stably by integer start minutes, not 'HH:MM' strings, so times past 24:00 still sort correctly. Update the method's docstring to say that higher-priority tasks keep their preferred time and lower-priority clashing tasks move to the next free slot.",
+      "Add the new tests to tests/test_pawpal.py using a local helper owner with a generous budget (e.g. 240 min) and day_start '07:00'.",
+      "Update README.md: mark 'A low-priority task can push a high-priority one later' as fixed in the known-bugs list, and update the test counts (37 total, 20 for PawPal+) to the new numbers. Leave the evidence/*.txt captures as they are, unless the project expects them to be regenerated.",
+      "Run `python -m pytest` and `python main.py`. Confirm the full suite passes and the demo schedule is unchanged."
+    ],
+    "files_to_change": [
+      "pawpal_system.py",
+      "tests/test_pawpal.py",
+      "README.md",
+      "diagrams/uml.mmd (only if it lists private Scheduler methods)"
+    ],
+    "tests_to_add": [
+      "test_high_priority_task_keeps_preferred_time_over_earlier_low_priority: a low-priority 'Nail trim' at 07:45 (10 min) and a high-priority 'Walk' at 07:50 (30 min) give Walk 07:50-08:20 and Nail trim moved to 08:20-08:30.",
+      "test_low_priority_task_is_still_scheduled_without_overlap: in the clash above, both tasks appear in the plan and no two plan items overlap in integer minutes.",
+      "test_bumped_low_priority_task_takes_earliest_free_gap_after_its_time: high-priority tasks at 08:00-08:30 and 08:40-09:00 plus a low-priority 10-min task at 08:10 place the low task exactly at 08:30-08:40 (back-to-back boundary).",
+      "test_same_priority_clash_keeps_earlier_preferred_time_first: two medium tasks at 08:00 (30 min) and 08:10 (5 min) give 08:00-08:30 and then 08:30-08:35 (the existing equal-priority behavior is preserved).",
+      "test_plan_is_returned_in_chronological_order_after_priority_placement: when the high-priority task's preferred time is later than the bumped low-priority task's original time, plan item starts are still non-decreasing.",
+      "test_untimed_task_does_not_overlap_priority_placed_timed_tasks: an untimed task in a plan with clashing timed tasks gets a slot that overlaps none of them."
+    ],
+    "risks": [
+      "test_generate_daily_plan_records_conflicts relies on the tie order of two high-priority 08:00 tasks. The key (priority, start, duration) puts Luna's 5-min task first, giving 08:00-08:05 and then 08:05-08:15. I traced this by hand, but a different tie-break would break the test.",
+      "Changing equal-priority ordering, for example by sorting purely with sort_tasks, would reorder same-priority clashes and could change main.py output. Mitigation: break ties on start time before duration.",
+      "A low-priority task whose preferred time is earlier than a high-priority task's may move to after it. This is intended, but it could surprise readers of the reasoning text, which does not yet mention the move.",
+      "Timed tasks preferred before day_start are clamped to day_start as today. Overflow past midnight is unchanged and remains a separate known gap.",
+      "uml.mmd or app.py might reference placement details I haven't seen. The README test counts must match the actual number of collected tests.",
+      "Hidden acceptance tests may use fixtures (budget, day_start) that interact with selection. A tight budget could drop the low-priority task before placement, though that is existing behavior."
+    ],
+    "confidence": 0.8,
+    "confidence_reason": "The change is confined to one private method, and I traced both the existing order-sensitive test and the main.py demo against the new logic, but I haven't seen uml.mmd or app.py, and the exact README count edits add small uncertainty."
+  },
+  "checks": [
+    {
+      "round": 1,
+      "ok": true,
+      "problems": [],
+      "passed": 43,
+      "failed": []
+    }
+  ],
+  "outcome": "passed",
+  "baseline": {
+    "passed": 37,
+    "failed": 0
+  },
+  "ok": true,
+  "rounds": 1,
+  "changed_files": [
+    "README.md",
+    "pawpal_system.py",
+    "tests/test_pawpal.py"
+  ],
+  "tool_calls": 20,
+  "refused_tool_calls": []
+}

@@ -1,0 +1,52 @@
+{
+  "run_id": "20261122-164323",
+  "task": "Fix: tasks with no set time are placed at the end of the day. They should fill the earliest free gap that fits.",
+  "model": "claude-opus-5-5",
+  "plan": {
+    "summary": "Change Scheduler._place_on_clock so timed tasks are placed first, keeping their preferred times and the current push-later-on-overlap behavior. Untimed tasks then go, in the priority order they were chosen, into the earliest free gap at or after owner.day_start that fits their duration. The returned plan is sorted chronologically. This is an internal change only; no public signatures change.",
+    "steps": [
+      "Read pawpal_system.py, app.py, tests/test_pawpal.py, README.md and diagrams/uml.mmd to confirm the only placement logic is in Scheduler._place_on_clock and that app.py and main.py only consume the plan and do not depend on its internal order.",
+      "Write the new tests in tests/test_pawpal.py first. Run pytest and confirm they fail against the current code.",
+      "Rewrite Scheduler._place_on_clock in pawpal_system.py: (a) split `tasks` into timed and untimed lists, preserving input order; (b) place timed tasks exactly as now: iterate sort_by_time(timed) with cursor starting at day_start and start = max(cursor, task.start_minutes), recording (start_min, end_min, task); (c) for each untimed task in input order (already priority order from _select_within_budget), call a new private helper _earliest_gap(busy, earliest, duration) and record the slot; (d) return the ScheduledTasks sorted by integer start minutes (stable sort).",
+      "Add the private helper Scheduler._earliest_gap(busy: list[tuple[int, int]], earliest: int, duration: int) -> int, with a docstring. It walks the busy intervals sorted by start, keeping candidate = earliest. If candidate + duration <= interval_start it returns candidate; otherwise it sets candidate = max(candidate, interval_end). If no gap is found it returns candidate after the last interval. Busy intervals never overlap, because timed placement is sequential and each untimed slot is added after it is placed.",
+      "Update the _place_on_clock docstring to say that untimed tasks fill the earliest free gap from day start.",
+      "Re-run the full suite. Check test_generate_daily_plan_records_conflicts: two timed 08:00 tasks must still give 08:00-08:05 then 08:05-08:15, because the timed path is unchanged and the stable sort keeps that order. Check test_next_occurrence_is_not_in_todays_plan: an untimed walk is still placed at 08:00.",
+      "Run `python main.py` and check that the demo schedule is sensible. 'Fetch in yard' should now land in a gap instead of after the evening tasks, if it is chosen within the budget.",
+      "In README.md, mark 'Tasks with no set time are placed at the end of the day' as fixed in the known-bugs list. Update the test counts: 36 tests becomes 36+N, and PawPal+ goes from 20 to 20+N, in both the Setup and Testing summary sections.",
+      "Leave diagrams/uml.mmd unchanged, because only private methods change. If the UML lists private methods, add _earliest_gap so it stays accurate."
+    ],
+    "files_to_change": [
+      "pawpal_system.py",
+      "tests/test_pawpal.py",
+      "README.md"
+    ],
+    "tests_to_add": [
+      "test_untimed_task_fills_gap_before_later_timed_task: day_start 08:00, a timed walk at 10:00 for 30 min, an untimed 15-min play; play is scheduled 08:00-08:15, not after the walk.",
+      "test_untimed_task_skips_gap_too_small: timed tasks at 08:00-08:30 and 08:40-09:00, an untimed 15-min task; it is placed 09:00-09:15 because the 10-min gap is too short.",
+      "test_untimed_task_fits_exact_size_gap: same timed tasks, an untimed 10-min task; it is placed exactly 08:30-08:40 (boundary case, back-to-back allowed).",
+      "test_multiple_untimed_tasks_fill_gaps_by_priority_without_overlap: a high-priority untimed task gets the earliest gap before a lower-priority one, and no two plan items overlap.",
+      "test_timed_tasks_keep_preferred_times_when_untimed_present: adding untimed tasks does not move any timed task's start time.",
+      "test_daily_plan_is_in_chronological_order: an untimed task placed in an early gap appears in the plan before later timed tasks (plan sorted by start)."
+    ],
+    "risks": [
+      "The existing test test_generate_daily_plan_records_conflicts depends on the order of plan items for same-time timed tasks. The timed path must keep its current iteration and the final sort must be stable, keyed on start minutes.",
+      "The plan used to be ordered with untimed tasks last. If app.py or main.py relies on that order, for example by indexing, their output changes. The plan returns chronological order, which should only improve display.",
+      "Sorting by 'HH:MM' strings can misorder times past midnight (minutes of 1440 or more). Sort by integer minutes to avoid this. The past-midnight bug itself is out of scope.",
+      "New tests must give the owner enough time_available_today, or tasks will be skipped by the budget and the tests will fail for the wrong reason.",
+      "The README test counts must match the actual number of tests added, or the documentation will be inaccurate."
+    ],
+    "confidence": 0.8,
+    "confidence_reason": "The change is localized to one private method and I traced both existing placement-sensitive tests against the new logic. Remaining uncertainty comes from app.py and the UML contents, which I haven't seen, and from small fixture details in the new tests."
+  },
+  "checks": [],
+  "outcome": "plan_only",
+  "baseline": {
+    "passed": 37,
+    "failed": 0
+  },
+  "ok": true,
+  "rounds": 0,
+  "changed_files": [],
+  "tool_calls": 5,
+  "refused_tool_calls": []
+}

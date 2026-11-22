@@ -1,0 +1,42 @@
+flowchart TD
+    dev([Developer]) -->|"task in plain English<br/>python coding_agent.py &quot;...&quot;"| base
+
+    subgraph agent["coding_agent.py — plan, act, check workflow"]
+        base["0 · BASELINE<br/>snapshot project to .agent_runs/&lt;id&gt;/before<br/>run pytest, record every test id"]
+        plan["1 · PLAN<br/>Claude reads README + code + tests<br/>returns a structured Plan (steps, files, tests, risks)"]
+        approve{"Developer<br/>approves plan?"}
+        act["2 · ACT<br/>Claude works test-first via sandboxed tools"]
+        check["3 · CHECK (plain Python, not Claude)<br/>✔ full suite passes<br/>✔ no existing test removed<br/>✔ new tests were added<br/>✔ changed files compile"]
+        ok{"All checks<br/>pass?"}
+        fix["4 · FIX<br/>failure report becomes Claude's next instruction"]
+        report["report.md<br/>plan · tool actions · check results · diff"]
+    end
+
+    subgraph tools["Workspace (sandbox)"]
+        t1[list_files / read_file]
+        t2["write_file / edit_file<br/>project folder only · .py .md .txt .mmd<br/>harness + guardrail tests protected"]
+        t3["run_tests<br/>pytest, target validated, timeout"]
+    end
+
+    subgraph app["PawPal+ (the code being improved)"]
+        sys[pawpal_system.py<br/>Owner · Pet · Task · Scheduler]
+        ui[app.py — Streamlit UI]
+        tests[tests/test_pawpal.py]
+    end
+
+    claude[(Claude API<br/>claude-opus-5-5)]
+
+    base --> plan --> approve
+    approve -- no --> report
+    approve -- yes --> act
+    act <-->|tool calls / results| tools
+    plan <--> claude
+    act <--> claude
+    tools --> app
+    act --> check --> ok
+    ok -- yes --> report
+    ok -- "no, rounds left" --> fix --> act
+    ok -- "no, out of rounds" --> report
+    report -->|"review diff, or undo with --revert &lt;id&gt;"| dev
+    ui --> sys
+    tests --> sys

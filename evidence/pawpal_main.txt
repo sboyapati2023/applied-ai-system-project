@@ -1,0 +1,106 @@
+$ python main.py
+Completed 'Thyroid meds' (due 2026-11-22) -> next occurrence due 2026-11-23, completed=False
+
+All tasks (in the order they were added)
+------------------------------------------------------------
+  18:00  Mochi  Brush coat     (20 min, low, todo, due Nov 22)
+  08:15  Mochi  Breakfast      (10 min, high, todo, due Nov 22)
+  --:--  Mochi  Fetch in yard  (15 min, medium, todo, due Nov 22)
+  07:30  Mochi  Morning walk   (30 min, high, todo, due Nov 22)
+  07:45  Mochi  Nail trim      (10 min, low, todo, due Nov 22)
+  17:30  Luna   Play session   (15 min, medium, todo, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, done, due Nov 22)
+  08:00  Luna   Breakfast      (5 min, high, todo, due Nov 22)
+  08:15  Luna   Brush teeth    (5 min, medium, todo, due Nov 22)
+  17:30  Luna   Ear cleaning   (10 min, medium, todo, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, todo, due Nov 23)
+
+Sorted by time (sort_by_time)
+------------------------------------------------------------
+  07:30  Mochi  Morning walk   (30 min, high, todo, due Nov 22)
+  07:45  Mochi  Nail trim      (10 min, low, todo, due Nov 22)
+  08:00  Luna   Breakfast      (5 min, high, todo, due Nov 22)
+  08:15  Mochi  Breakfast      (10 min, high, todo, due Nov 22)
+  08:15  Luna   Brush teeth    (5 min, medium, todo, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, done, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, todo, due Nov 23)
+  17:30  Luna   Play session   (15 min, medium, todo, due Nov 22)
+  17:30  Luna   Ear cleaning   (10 min, medium, todo, due Nov 22)
+  18:00  Mochi  Brush coat     (20 min, low, todo, due Nov 22)
+  --:--  Mochi  Fetch in yard  (15 min, medium, todo, due Nov 22)
+
+Sorted by priority (sort_tasks)
+------------------------------------------------------------
+  08:00  Luna   Breakfast      (5 min, high, todo, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, done, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, todo, due Nov 23)
+  08:15  Mochi  Breakfast      (10 min, high, todo, due Nov 22)
+  07:30  Mochi  Morning walk   (30 min, high, todo, due Nov 22)
+  08:15  Luna   Brush teeth    (5 min, medium, todo, due Nov 22)
+  17:30  Luna   Ear cleaning   (10 min, medium, todo, due Nov 22)
+  17:30  Luna   Play session   (15 min, medium, todo, due Nov 22)
+  --:--  Mochi  Fetch in yard  (15 min, medium, todo, due Nov 22)
+  07:45  Mochi  Nail trim      (10 min, low, todo, due Nov 22)
+  18:00  Mochi  Brush coat     (20 min, low, todo, due Nov 22)
+
+Only Luna's tasks (filter_tasks pet_name='Luna')
+------------------------------------------------------------
+  17:30  Luna   Play session   (15 min, medium, todo, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, done, due Nov 22)
+  08:00  Luna   Breakfast      (5 min, high, todo, due Nov 22)
+  08:15  Luna   Brush teeth    (5 min, medium, todo, due Nov 22)
+  17:30  Luna   Ear cleaning   (10 min, medium, todo, due Nov 22)
+  09:00  Luna   Thyroid meds   (5 min, high, todo, due Nov 23)
+
+Completed tasks (filter_tasks completed=True)
+------------------------------------------------------------
+  09:00  Luna   Thyroid meds   (5 min, high, done, due Nov 22)
+
+Mochi's unfinished tasks, by time (filter + sort)
+------------------------------------------------------------
+  07:30  Mochi  Morning walk   (30 min, high, todo, due Nov 22)
+  07:45  Mochi  Nail trim      (10 min, low, todo, due Nov 22)
+  08:15  Mochi  Breakfast      (10 min, high, todo, due Nov 22)
+  18:00  Mochi  Brush coat     (20 min, low, todo, due Nov 22)
+  --:--  Mochi  Fetch in yard  (15 min, medium, todo, due Nov 22)
+
+Conflict check (detect_conflicts)
+------------------------------------------------------------
+  ! Conflict (same pet): Mochi's 'Morning walk' (07:30-08:00) overlaps Mochi's 'Nail trim' (07:45-07:55).
+  ! Conflict (different pets): Mochi's 'Breakfast' (08:15-08:25) overlaps Luna's 'Brush teeth' (08:15-08:20).
+  ! Conflict (same pet): Luna's 'Play session' (17:30-17:45) overlaps Luna's 'Ear cleaning' (17:30-17:40).
+  [OK] Breakfast vs Brush teeth (different pets)
+  [OK] Play session vs Ear cleaning (same pet)
+  [OK] Morning walk vs Nail trim (same pet)
+
+
+Today's Schedule for Jordan
+Pets: Mochi, Luna | Time available: 90 min
+============================================================
+07:30-08:00  Mochi  Morning walk   (30 min, high)
+08:00-08:05  Luna   Breakfast      (5 min, high)
+08:15-08:25  Mochi  Breakfast      (10 min, high)
+08:25-08:30  Luna   Brush teeth    (5 min, medium)
+17:30-17:40  Luna   Ear cleaning   (10 min, medium)
+17:40-17:55  Luna   Play session   (15 min, medium)
+17:55-18:10  Mochi  Fetch in yard  (15 min, medium)
+
+Conflicts (if both are scheduled, the later one starts when the earlier one ends):
+  ! Conflict (same pet): Mochi's 'Morning walk' (07:30-08:00) overlaps Mochi's 'Nail trim' (07:45-07:55).
+  ! Conflict (different pets): Mochi's 'Breakfast' (08:15-08:25) overlaps Luna's 'Brush teeth' (08:15-08:20).
+  ! Conflict (same pet): Luna's 'Play session' (17:30-17:45) overlaps Luna's 'Ear cleaning' (17:30-17:40).
+
+Not scheduled today:
+  - Mochi: Nail trim (10 min, low)
+  - Mochi: Brush coat (20 min, low)
+
+Why this plan:
+  Scheduled 'Breakfast' for Luna: high priority, 5 min fits (85 min left).
+  Scheduled 'Breakfast' for Mochi: high priority, 10 min fits (75 min left).
+  Scheduled 'Morning walk' for Mochi: high priority, 30 min fits (45 min left).
+  Scheduled 'Brush teeth' for Luna: medium priority, 5 min fits (40 min left).
+  Scheduled 'Ear cleaning' for Luna: medium priority, 10 min fits (30 min left).
+  Scheduled 'Play session' for Luna: medium priority, 15 min fits (15 min left).
+  Scheduled 'Fetch in yard' for Mochi: medium priority, 15 min fits (0 min left).
+  Skipped 'Nail trim' for Mochi: needs 10 min but only 0 min left.
+  Skipped 'Brush coat' for Mochi: needs 20 min but only 0 min left.

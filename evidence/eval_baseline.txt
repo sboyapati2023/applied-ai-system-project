@@ -1,0 +1,6 @@
+$ python evaluate.py --baseline
+Case               Hidden tests passing on current code    
+midnight           0/2  failing: test_late_preferred_time_does_not_cross_midnight, test_plan_never_runs_past_midnight
+same-name-recur    1/2  failing: test_two_daily_tasks_with_same_name_both_recur
+priority-slot      0/1  failing: test_high_priority_task_keeps_its_preferred_time
+untimed-gaps       0/1  failing: test_untimed_task_fills_earlier_free_gap

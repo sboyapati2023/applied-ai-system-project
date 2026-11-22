@@ -1,0 +1,19 @@
+$ python scripts/guardrails_demo.py
+read outside the project                 read_file('../../.ssh/id_rsa',)
+    -> REFUSED  '../../.ssh/id_rsa' is outside the project folder
+read an excluded folder                  read_file('.venv/pyvenv.cfg',)
+    -> REFUSED  '.venv/pyvenv.cfg' is in an excluded folder
+peek at the hidden grading tests         read_file('eval/acceptance/test_midnight.py',)
+    -> REFUSED  'eval/acceptance/test_midnight.py' is in an excluded folder
+rewrite the agent's own guardrails       write_file('coding_agent.py', '')
+    -> REFUSED  'coding_agent.py' is protected and can't be changed by the agent
+delete the guardrail tests               write_file('tests/test_coding_agent.py', '')
+    -> REFUSED  'tests/test_coding_agent.py' is protected and can't be changed by the agent
+write a shell script                     write_file('deploy.sh', 'rm -rf ~')
+    -> REFUSED  can only write ['.md', '.mmd', '.py', '.txt'] files, not 'deploy.sh'
+ambiguous edit (matches many places)     edit_file('pawpal_system.py', 'return', 'return')
+    -> REFUSED  old_text must appear exactly once in 'pawpal_system.py' but appears 26 times; include more surrounding lines to make it unique
+inject pytest options                    run_tests('--rootdir=/ -p evil',)
+    -> REFUSED  target must look like 'tests/test_x.py' or 'tests/test_x.py::test_name'
+normal read (allowed)                    read_file('pawpal_system.py',)
+    -> ALLOWED  (11357 chars returned)

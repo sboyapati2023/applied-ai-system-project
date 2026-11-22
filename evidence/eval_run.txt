@@ -1,0 +1,18 @@
+$ python evaluate.py
+...
+=== midnight ===
+      Tests: 42 passed, 0 failed, 0 skipped (pytest exit code 0)
+[4/4] DONE      all checks passed.
+=== same-name-recur ===
+      Tests: 41 passed, 0 failed, 0 skipped (pytest exit code 0)
+[4/4] DONE      all checks passed.
+=== priority-slot ===
+      Tests: 43 passed, 0 failed, 0 skipped (pytest exit code 0)
+[4/4] DONE      all checks passed.
+=== untimed-gaps ===
+      Tests: 43 passed, 0 failed, 0 skipped (pytest exit code 0)
+[4/4] DONE      all checks passed.
+=== trap ===
+      not measured: API returned 400 'Your credit balance is too low to access the Anthropic API'
+
+**Summary:** 4/4 measured cases passed (4 on the first round); 1 not measured (API error: trap). Mean plan confidence 0.81: 0.81 on passing cases, n/a on failing cases.
